@@ -1,0 +1,55 @@
+<!-- templates/chat.html -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Chat Assistant</title>
+  </head>
+  <body>
+    <h1>Chat Assistant</h1>
+    <div
+      id="chat-log"
+      style="
+        border: 1px solid #ccc;
+        width: 400px;
+        height: 300px;
+        overflow-y: scroll;
+      "
+    ></div>
+    <input
+      type="text"
+      id="user-input"
+      placeholder="Type a message..."
+      style="width: 300px"
+    />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+      async function sendMessage() {
+        const userInput = document.getElementById("user-input");
+        const message = userInput.value;
+        userInput.value = "";
+
+        // Add user message to chat log
+        addToChatLog("You", message);
+
+        // Send POST request
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+        });
+        const data = await response.json();
+        addToChatLog("Assistant", data.reply);
+      }
+
+      function addToChatLog(sender, text) {
+        const chatLog = document.getElementById("chat-log");
+        const newMsg = document.createElement("div");
+        newMsg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        chatLog.appendChild(newMsg);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+    </script>
+  </body>
+</html>

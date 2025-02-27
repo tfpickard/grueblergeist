@@ -1,0 +1,49 @@
+# Byte-compiled and cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+
+# Virtual environment
+venv/
+.env
+
+# Logs & temp files
+logs/
+*.log
+*.out
+*.bak
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints
+
+# SQLite databases
+*.sqlite3
+*.db
+
+# MacOS / Linux system files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+*.iml
+
+# Python packages
+*.egg-info/
+dist/
+build/
+
+# Compiled files and caches
+*.so
+*.o
+*.a
+*.obj
+
+# Docker/Container files
+docker-compose.override.yml
+
+# Secrets (adjust accordingly)
+config.json
