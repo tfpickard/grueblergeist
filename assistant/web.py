@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 """
-Flask-based Web Interface for Grüblergeist, combining Chat UI and Debugging Dashboard.
+Flask API for Grüblergeist React Frontend.
 """
-
 import json
 import os
 
-from flask import Flask, jsonify, render_template, request
-from rich.console import Console
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from rich import print
 
 from .chat_assistant import ChatAssistant
 
-console = Console()
-app = Flask(__name__, template_folder="../templates")
+app = Flask(__name__)
+CORS(app)  # Allow frontend requests
+
 assistant = ChatAssistant()
 
 STYLE_PROFILE_FILE = "data/user_style_profile.json"
@@ -27,34 +28,41 @@ def load_json(file_path):
         with open(file_path, "r", encoding="utf-8") as file:
             return json.load(file)
     except json.JSONDecodeError:
-        console.print(f"[red]Error reading {file_path}.[/]")
         return {}
 
 
-@app.route("/")
-def index():
-    """Render the combined Chat + Debugging UI."""
-    style_profile = load_json(STYLE_PROFILE_FILE)
-    chat_log = load_json(ROLLING_CHAT_LOG).get("messages", [])
-
-    return render_template(
-        "combined_ui.html",
-        style_profile=style_profile,
-        chat_log=chat_log[-10:],  # Show last 10 messages
-    )
-
-
-@app.route("/chat", methods=["POST"])
+@app.route("/api/chat", methods=["POST"])
 def chat():
     """Handle chat interactions."""
     data = request.get_json()
     user_message = data.get("message", "")
     assistant_reply = assistant.reply(user_message)
-
+    print("\n\n")
+    print(jsonify({"reply": assistant_reply}))
+    print(assistant_reply)
+    print("\n\n")
     return jsonify({"reply": assistant_reply})
+
+
+@app.route("/api/persona", methods=["GET"])
+def get_persona():
+    """Return AI persona details."""
+    persona = load_json(STYLE_PROFILE_FILE)
+    return jsonify(persona)
+
+
+@app.route("/api/chat-log", methods=["GET"])
+def get_chat_log():
+    """Return the last 10 messages from chat history."""
+    chat_log = load_json(ROLLING_CHAT_LOG).get("messages", [])
+    return jsonify(chat_log[-10:])  # Only return last 10
 
 
 def run_web():
     """Start the Flask Web UI."""
-    console.print("[cyan]Starting Web Interface...[/]")
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
+
+
+def run_api():
+    """Start Flask API."""
+    app.run(debug=True, port=5001)

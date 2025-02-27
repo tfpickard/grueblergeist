@@ -91,7 +91,7 @@ class ChatAssistant:
 
         # Generate reply using the LLM
         assistant_reply: str = self.llm.generate_reply(history, user_message)
-
+        logger.info(f"Raw OpenAI Response: {assistant_reply}")
         # Save interaction
         save_interaction(
             self.user_id, user_message, assistant_reply, tone_detected=None

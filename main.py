@@ -21,7 +21,7 @@ from assistant.web import run_web
 def setup_logging():
     """Configure logging with Rich handler."""
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="%(message)s",
         datefmt="[%X]",
         handlers=[RichHandler()],
