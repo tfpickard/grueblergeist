@@ -1,7 +1,7 @@
-# assistant/chat_assistant.py
+#!/usr/bin/env python
 """
 ChatAssistant class for Grüblergeist.
-Now includes user-specific style adaptation.
+Handles conversation memory, user-specific adaptations, and AI interactions.
 """
 
 import json
@@ -12,7 +12,12 @@ from .config import get_config_value
 from .db import get_conversation_history, get_user_profile, save_interaction
 from .llm_client import LLMClient
 
+# Set up logging
 logger = logging.getLogger(__name__)
+
+# File paths for user data tracking
+STYLE_PROFILE_FILE = "data/user_style_profile.json"
+ROLLING_CHAT_LOG = "data/rolling_chat_log.json"
 
 
 class ChatAssistant:
@@ -35,13 +40,33 @@ class ChatAssistant:
         """
         Load user-specific style traits from a precomputed JSON file.
         """
-        style_file = "data/user_style_profile.json"
         try:
-            with open(style_file, "r", encoding="utf-8") as file:
+            with open(STYLE_PROFILE_FILE, "r", encoding="utf-8") as file:
                 return json.load(file)
         except FileNotFoundError:
             logger.warning("User style profile not found. Using default AI tone.")
             return {}
+
+    def append_to_chat_log(self, user_message: str, assistant_reply: str) -> None:
+        """
+        Append messages to a rolling chat log for debugging and AI refinement.
+        Keeps only the last 100 messages to prevent memory bloat.
+        """
+        try:
+            with open(ROLLING_CHAT_LOG, "r", encoding="utf-8") as file:
+                chat_data = json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            chat_data = {"messages": []}
+
+        chat_data["messages"].append(
+            {"user": user_message, "assistant": assistant_reply}
+        )
+
+        # Keep only the last 100 messages
+        chat_data["messages"] = chat_data["messages"][-100:]
+
+        with open(ROLLING_CHAT_LOG, "w", encoding="utf-8") as file:
+            json.dump(chat_data, file, indent=4)
 
     def reply(self, user_message: str) -> str:
         """
@@ -71,4 +96,6 @@ class ChatAssistant:
         save_interaction(
             self.user_id, user_message, assistant_reply, tone_detected=None
         )
+        self.append_to_chat_log(user_message, assistant_reply)
+
         return assistant_reply
