@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grüblergeist Chat & Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      h1 {
+        color: #333;
+      }
+      #chat-log {
+        border: 1px solid #ccc;
+        width: 400px;
+        height: 300px;
+        overflow-y: scroll;
+        padding: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Grüblergeist: Chat & Debugging</h1>
+
+    <h2>💬 Chat Interface</h2>
+    <div id="chat-log"></div>
+    <input
+      type="text"
+      id="user-input"
+      placeholder="Say something..."
+      style="width: 300px"
+    />
+    <button onclick="sendMessage()">Send</button>
+
+    <h2>🧠 AI Personality Profile</h2>
+    <table>
+      <tr>
+        <th>Trait</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>Avg Sentence Length</td>
+        <td>{{ style_profile.get("avg_sentence_length", "N/A") }}</td>
+      </tr>
+      <tr>
+        <td>Response Style</td>
+        <td>{{ style_profile.get("response_style", "N/A") }}</td>
+      </tr>
+      <tr>
+        <td>Most Common Words</td>
+        <td>{{ ", ".join(style_profile.get("most_common_words", [])) }}</td>
+      </tr>
+      <tr>
+        <td>Common Phrases</td>
+        <td>{{ ", ".join(style_profile.get("common_phrases", [])) }}</td>
+      </tr>
+    </table>
+
+    <h2>📜 Recent Messages</h2>
+    {% for message in chat_log %}
+    <p><strong>You:</strong> {{ message["user"] }}</p>
+    <p><strong>AI:</strong> {{ message["assistant"] }}</p>
+    <hr />
+    {% endfor %}
+
+    <h2>📊 AI Evolution Tracker</h2>
+    <canvas id="evolutionChart"></canvas>
+
+    <script>
+      async function sendMessage() {
+        const userInput = document.getElementById("user-input");
+        const message = userInput.value;
+        userInput.value = "";
+
+        addToChatLog("You", message);
+
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+        });
+
+        const data = await response.json();
+        addToChatLog("Grüblergeist", data.reply);
+      }
+
+      function addToChatLog(sender, text) {
+        const chatLog = document.getElementById("chat-log");
+        const newMsg = document.createElement("div");
+        newMsg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        chatLog.appendChild(newMsg);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      // Evolution Graph Data
+      const ctx = document.getElementById("evolutionChart").getContext("2d");
+      const chartData = {
+        labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+        datasets: [
+          {
+            label: "Avg Sentence Length",
+            data: [5, 7, 8, 10],
+            borderColor: "blue",
+            fill: false,
+          },
+          {
+            label: "Response Complexity",
+            data: [2, 3, 5, 6],
+            borderColor: "red",
+            fill: false,
+          },
+        ],
+      };
+
+      new Chart(ctx, {
+        type: "line",
+        data: chartData,
+        options: {
+          responsive: true,
+          title: { display: true, text: "Grüblergeist Evolution Over Time" },
+        },
+      });
+    </script>
+  </body>
+</html>

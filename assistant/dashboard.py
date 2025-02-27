@@ -1,19 +1,15 @@
 #!/usr/bin/env python
 """
-Flask-based Web Interface for Grüblergeist, combining Chat UI and Debugging Dashboard.
+Debugging Dashboard for tracking AI persona evolution.
 """
 
 import json
 import os
-
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, render_template
 from rich.console import Console
-
-from .chat_assistant import ChatAssistant
 
 console = Console()
 app = Flask(__name__, template_folder="../templates")
-assistant = ChatAssistant()
 
 STYLE_PROFILE_FILE = "data/user_style_profile.json"
 ROLLING_CHAT_LOG = "data/rolling_chat_log.json"
@@ -32,29 +28,19 @@ def load_json(file_path):
 
 
 @app.route("/")
-def index():
-    """Render the combined Chat + Debugging UI."""
+def dashboard():
+    """Render the debugging dashboard."""
     style_profile = load_json(STYLE_PROFILE_FILE)
     chat_log = load_json(ROLLING_CHAT_LOG).get("messages", [])
 
     return render_template(
-        "combined_ui.html",
+        "dashboard.html",
         style_profile=style_profile,
-        chat_log=chat_log[-10:],  # Show last 10 messages
+        chat_log=chat_log[-10:],  # Show the last 10 messages
     )
 
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    """Handle chat interactions."""
-    data = request.get_json()
-    user_message = data.get("message", "")
-    assistant_reply = assistant.reply(user_message)
-
-    return jsonify({"reply": assistant_reply})
-
-
-def run_web():
-    """Start the Flask Web UI."""
-    console.print("[cyan]Starting Web Interface...[/]")
-    app.run(debug=True, port=5000)
+def run_dashboard():
+    """Start the Flask debugging dashboard."""
+    console.print("[cyan]Starting Debugging Dashboard...[/]")
+    app.run(debug=True, port=5001)

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grüblergeist Debugging Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      h1 {
+        color: #333;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      pre {
+        background-color: #eee;
+        padding: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Grüblergeist Debugging Dashboard</h1>
+
+    <h2>🧠 AI Personality Profile</h2>
+    {% if style_profile %}
+    <table>
+      <tr>
+        <th>Trait</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>Avg Sentence Length</td>
+        <td>{{ style_profile.get("avg_sentence_length", "N/A") }}</td>
+      </tr>
+      <tr>
+        <td>Response Style</td>
+        <td>{{ style_profile.get("response_style", "N/A") }}</td>
+      </tr>
+      <tr>
+        <td>Most Common Words</td>
+        <td>{{ ", ".join(style_profile.get("most_common_words", [])) }}</td>
+      </tr>
+      <tr>
+        <td>Common Phrases</td>
+        <td>{{ ", ".join(style_profile.get("common_phrases", [])) }}</td>
+      </tr>
+    </table>
+    {% else %}
+    <p>No style profile available yet.</p>
+    {% endif %}
+
+    <h2>📜 Recent Messages</h2>
+    {% if chat_log %} {% for message in chat_log %}
+    <p><strong>You:</strong> {{ message["user"] }}</p>
+    <p><strong>AI:</strong> {{ message["assistant"] }}</p>
+    <hr />
+    {% endfor %} {% else %}
+    <p>No recent chat history available.</p>
+    {% endif %}
+  </body>
+</html>

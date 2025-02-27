@@ -35,7 +35,7 @@ class ChatAssistant:
         """
         Load user-specific style traits from a precomputed JSON file.
         """
-        style_file = "/mnt/data/user_style_profile.json"
+        style_file = "data/user_style_profile.json"
         try:
             with open(style_file, "r", encoding="utf-8") as file:
                 return json.load(file)

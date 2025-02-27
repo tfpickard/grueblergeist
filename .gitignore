@@ -8,7 +8,7 @@ __pycache__/
 # Virtual environment
 venv/
 .env
-
+data/
 # Logs & temp files
 logs/
 *.log
