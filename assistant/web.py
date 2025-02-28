@@ -57,6 +57,33 @@ def get_chat_log():
     return jsonify(chat_log[-10:])  # Only return last 10
 
 
+@app.route("/api/threshold-history", methods=["GET"])
+def get_threshold_history():
+    """Returns historical threshold vs. snarkiness data."""
+    return jsonify(
+        {"threshold": assistant.threshold_history, "snark": assistant.snark_history}
+    )
+
+
+@app.route("/api/topic-score", methods=["GET"])
+def get_last_topic_score():
+    """Returns the latest topic match percentage."""
+    if assistant.recent_topic_scores:
+        return jsonify(
+            {"topic_score": assistant.recent_topic_scores[-1] * 100}
+        )  # Convert to %
+    return jsonify({"topic_score": 50})  # Default neutral
+
+
+# @app.route("/api/threshold-history", methods=["GET"])
+# def get_threshold_history():
+#     """Returns historical threshold vs. snarkiness data."""
+#     return jsonify(
+#         {"threshold": assistant.threshold_history, "snark": assistant.snark_history}
+#     )
+#
+
+
 def run_web():
     """Start the Flask Web UI."""
     app.run(debug=True, port=5001)

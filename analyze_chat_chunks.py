@@ -13,10 +13,10 @@ Features:
 - "stop_early" flag to limit chunk processing to 5 chunks
 - Multi-level consolidation to handle hundreds of partial summaries
 """
-
 import json
 import math
 import os
+import random
 import time
 from typing import Optional
 
@@ -38,7 +38,8 @@ CHUNK_SIZE = 6000  # Approx. characters per chunk
 BATCH_SIZE = 10  # Summaries per pass in multi-level consolidation
 STOP_EARLY = True  # If True, only process first 5 chunks to keep it short
 SLEEP_ON_RATE_LIMIT = 30  # seconds to sleep if we hit rate limit
-
+mu = 1.5
+sigma = 2
 console = Console()
 
 
@@ -78,18 +79,33 @@ def main():
 
     # 3. Summarize each chunk individually
     chunk_summaries = []
+    nchunks = 0
     for i, chunk in enumerate(
         track(chunks, description="Summarizing chunks...", console=console)
     ):
-        if STOP_EARLY and i % 8 != 0:
-            print(f"Skipping chunk {i}...")
+        if STOP_EARLY and i >= 40:
+            break
+        if len(chunk) - i < 10:
+            break
+        x = 0
+        while x <= 0.0:
+            x = random.normalvariate(mu, sigma)
+        x = int(x)
+
+        if STOP_EARLY and i % (1 + x) != 0:
+            # print(f"Skipping chunk {i}...")
             continue
+        else:
+            nchunks += 1
+            # print(f"Chunk {nchunks} of {len(chunks)}")
 
         summary = summarize_chunk(chunk, i + 1, len(chunks))
         chunk_summaries.append(summary)
-
+    print(f"Summarized {nchunks} chunks of {len(chunks)} ({nchunks/len(chunks)*100}%)")
     # 4. Multi-level consolidation of chunk summaries
-    console.print("[blue]Multi-level consolidation of chunk summaries...[/blue]")
+    console.print(
+        f"[blue]Multi-level consolidation of {nchunks} chunk summaries...[/blue]"
+    )
     style_profile = multi_level_consolidation(chunk_summaries, batch_size=BATCH_SIZE)
 
     if not style_profile:
@@ -183,9 +199,18 @@ def multi_level_consolidation(chunk_summaries: list[str], batch_size: int) -> di
     # If we have <= batch_size, do a single pass
     if len(chunk_summaries) <= batch_size:
         combined_text = ""
+        y = ""
         for i, summary in enumerate(chunk_summaries):
             combined_text += f"Summary {i+1}:\n{summary}\n\n"
-        return pass_through_gpt_for_json(combined_text)
+            x = pass_through_gpt_for_json(combined_text)
+            if len(x) > 4:
+                y = combined_text
+            else:
+                break
+        if len(y) == 0:
+            y = "{}"
+        print(f" y Combined text: {y}")
+        return json.loads(y)
 
     # If more than batch_size, break into smaller groups
     group_count = math.ceil(len(chunk_summaries) / batch_size)
@@ -197,14 +222,22 @@ def multi_level_consolidation(chunk_summaries: list[str], batch_size: int) -> di
 
         # Combine this group's partial summaries
         combined_text = ""
+        y = ""
         for i, summary in enumerate(batch):
             combined_text += f"Summary {i+1}:\n{summary}\n\n"
-
+            x = pass_through_gpt_for_json(combined_text)
+            if len(x) > 4:
+                y = combined_text
+            else:
+                break
+        combined_text = y
         console.print(
             f"[blue]Consolidating group {group_index+1}/{group_count} of size {len(batch)}[/blue]"
         )
+        print(1)
         partial_summary_json = pass_through_gpt_for_json(combined_text)
         # We'll convert partial_summary_json back to a string (for next pass)
+        print(2)
         partial_summaries.append(json.dumps(partial_summary_json))
 
     # Now partial_summaries is a smaller list
@@ -237,7 +270,7 @@ IMPORTANT:
         try:
             raw = call_openai_chat(final_prompt)
             console.log(
-                f"[bold green]Partial Consolidation Response (attempt {attempt}):[/] {raw[:200]}..."
+                f"[bold green]Partial Consolidation Response (attempt {attempt}):[/] {raw}..."
             )
 
             # salvage parse
@@ -276,7 +309,7 @@ def salvage_json_substring(raw_str: str) -> Optional[dict]:
         return json.loads(candidate)
     except json.JSONDecodeError as e:
         console.print(f"[red]json.JSONDecodeError in salvage_json_substring:[/] {e}")
-        return None
+        return json.loads("{}")
 
 
 def call_openai_chat(prompt: str) -> str:
