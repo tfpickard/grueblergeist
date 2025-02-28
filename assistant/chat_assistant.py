@@ -3,7 +3,9 @@ import logging
 import math
 import random
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from openai import OpenAI
 
 client = OpenAI()
@@ -43,8 +45,8 @@ class ChatAssistant:
         - If the user is consistently on-topic, patience recovers more smoothly.
         """
         momentum_factor = 0.05
-        recovery_rate = 0.02
-        decay_rate = 0.04
+        recovery_rate = 0.32
+        decay_rate = 0.27
         noise_intensity = 0.03
 
         # Compute recent topic trend (average of last N scores)
@@ -100,9 +102,7 @@ class ChatAssistant:
             f"Generating LLM shutdown response (Patience: {self.dynamic_threshold:.2f}, Snark: {snarkiness:.2f})"
         )
 
-        response = self.llm.generate_reply(
-            [("system", shutdown_prompt)], user_message=None
-        )
+        response = self.llm.generate_reply([("system", shutdown_prompt)], "")
         return response.strip()
 
     def reply(self, user_message: str, strict_enforcement: bool = False) -> str:
@@ -120,7 +120,9 @@ class ChatAssistant:
         topic_score = self.compute_topic_score(user_message, preferred_topics)
         self.update_threshold(topic_score)
         snarkiness = self.get_snarkiness()
-
+        logger.info(
+            f"Topic Score: {topic_score:.2f}, Snarkiness: {snarkiness:.2f}, Threshold: {self.dynamic_threshold:.2f}, strict_enforcement: {strict_enforcement}"
+        )
         if strict_enforcement and topic_score < self.dynamic_threshold:
             redirect_topic = (
                 random.choice(preferred_topics)
@@ -167,16 +169,19 @@ class ChatAssistant:
         )
 
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
             )
-            gpt_response = response["choices"][0]["message"]["content"]
+            gpt_response = response.choices[0].message.content
             topic_scores = parse_topic_scores(gpt_response, preferred_topics)
 
             # ✅ Store latest score, limiting history to 5
-            avg_score = sum(topic_scores.values()) / len(topic_scores)
+            if len(topic_scores) > 0:
+                avg_score = sum(topic_scores.values()) / len(topic_scores)
+            else:
+                avg_score = 0.0
             self.recent_topic_scores.append(avg_score)
             if len(self.recent_topic_scores) > self.max_topic_memory:
                 self.recent_topic_scores.pop(0)
@@ -194,9 +199,12 @@ def parse_topic_scores(gpt_response: str, topics: list[str]) -> dict:
     Expects the response to contain scores formatted like: 'Topic Name: 0.85'
     """
     scores = {}
+    logger.info(f"Parsing topic scores from GPT-4 response:\n{gpt_response}")
     for line in gpt_response.split("\n"):
+        logger.info(f"Line: {line}")
         for topic in topics:
-            if line.lower().startswith(topic.lower()):
+            if line.lower().find(topic.lower()) != -1:
+                logger.info(f"Matched topic: {topic}")
                 try:
                     score = float(line.split(":")[-1].strip())
                     scores[topic] = score

@@ -33,8 +33,12 @@ export default function Home() {
   const [strictEnforcement, setStrictEnforcement] = useState(false);
   const [thresholdData, setThresholdData] = useState([]);
   const [snarkData, setSnarkData] = useState([]);
-  const [topicMatch, setTopicMatch] = useState(50); // Default to 50%
+  const [topicMatch, setTopicMatch] = useState(50);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Command history for text input
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -68,7 +72,6 @@ export default function Home() {
       }
     }
 
-    // Fetch data immediately & every 3 seconds
     fetchThresholdData();
     const interval = setInterval(fetchThresholdData, 3000);
     return () => clearInterval(interval);
@@ -104,9 +107,36 @@ export default function Home() {
         { user: userInput },
         { assistant: res.data.reply },
       ]);
+
+      // Update command history (limit to last 100 entries)
+      setCommandHistory((prev) => {
+        const updatedHistory = [userInput, ...prev].slice(0, 100);
+        return updatedHistory;
+      });
+      setHistoryIndex(-1); // Reset index
       setUserInput("");
     } catch (error) {
       console.error("⚠️ Error sending message:", error);
+    }
+  }
+
+  // Handle Up/Down Arrow Key for Command History
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "ArrowUp") {
+      if (historyIndex + 1 < commandHistory.length) {
+        const newIndex = historyIndex + 1;
+        setHistoryIndex(newIndex);
+        setUserInput(commandHistory[newIndex]);
+      }
+    } else if (e.key === "ArrowDown") {
+      if (historyIndex > 0) {
+        const newIndex = historyIndex - 1;
+        setHistoryIndex(newIndex);
+        setUserInput(commandHistory[newIndex]);
+      } else {
+        setHistoryIndex(-1);
+        setUserInput("");
+      }
     }
   }
 
@@ -200,7 +230,7 @@ export default function Home() {
           placeholder="Say something..."
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={handleKeyDown}
         />
         <button
           className="bg-neonPink text-black px-4 py-2 rounded-r-lg hover:bg-neonBlue transition-all"
