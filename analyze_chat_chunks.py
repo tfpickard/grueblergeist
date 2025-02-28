@@ -18,11 +18,13 @@ import json
 import math
 import os
 import time
+from typing import Optional
 
 import openai
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from rich import print
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
@@ -34,7 +36,7 @@ CHAT_LOG_PATH = "data/user_chat_history.md"  # Large chat text in Markdown
 STYLE_PROFILE_PATH = "data/user_style_profile.json"
 CHUNK_SIZE = 6000  # Approx. characters per chunk
 BATCH_SIZE = 10  # Summaries per pass in multi-level consolidation
-STOP_EARLY = False  # If True, only process first 5 chunks to keep it short
+STOP_EARLY = True  # If True, only process first 5 chunks to keep it short
 SLEEP_ON_RATE_LIMIT = 30  # seconds to sleep if we hit rate limit
 
 console = Console()
@@ -64,7 +66,7 @@ def main():
     )
 
     # Optionally stop early
-    if STOP_EARLY and len(chunks) > 5:
+    if False and STOP_EARLY and len(chunks) > 5:
         console.print(
             "[bold magenta]stop_early=True, limiting chunk processing to 5 chunks.[/bold magenta]"
         )
@@ -79,6 +81,10 @@ def main():
     for i, chunk in enumerate(
         track(chunks, description="Summarizing chunks...", console=console)
     ):
+        if STOP_EARLY and i % 8 != 0:
+            print(f"Skipping chunk {i}...")
+            continue
+
         summary = summarize_chunk(chunk, i + 1, len(chunks))
         chunk_summaries.append(summary)
 
@@ -205,29 +211,72 @@ def multi_level_consolidation(chunk_summaries: list[str], batch_size: int) -> di
     return multi_level_consolidation(partial_summaries, batch_size)
 
 
-def pass_through_gpt_for_json(combined_text: str) -> dict:
+def pass_through_gpt_for_json(combined_text: str, max_retries: int = 2) -> dict:
     """
     Sends combined_text to GPT-4 to produce final style profile in JSON format
     with keys: "tone", "style", "common_phrases", "preferred_topics".
 
-    If GPT returns invalid JSON or rate-limit error, we handle it.
+    We do a salvage parse to handle truncated or extra text beyond the JSON.
+    If it fails, we optionally retry a few times.
     """
     final_prompt = f"""
 We have multiple partial summaries of a user's chat. Combine them into a single
 persona/style profile. Return valid JSON with keys: 
 "tone", "style", "common_phrases", "preferred_topics".
 
-Partial Summaries:
+Partial Summaries (keep your JSON as short as possible, no extra arrays, no multiline strings):
 {combined_text}
+
+IMPORTANT:
+- Output must be strictly valid JSON, no leading or trailing text outside the outermost braces.
+- Do not exceed ~500 tokens if possible.
 """
+    attempt = 0
+    while attempt < max_retries:
+        attempt += 1
+        try:
+            raw = call_openai_chat(final_prompt)
+            console.log(
+                f"[bold green]Partial Consolidation Response (attempt {attempt}):[/] {raw[:200]}..."
+            )
+
+            # salvage parse
+            parsed = salvage_json_substring(raw)
+            if parsed is not None:
+                return parsed
+            else:
+                console.print(
+                    f"[red]Failed to parse JSON on attempt {attempt}, retrying...[/red]"
+                )
+        except Exception as e:
+            console.print(
+                f"[red]Error in pass_through_gpt_for_json attempt {attempt}:[/] {e}"
+            )
+
+    # if all attempts fail
+    console.print(
+        "[bold red]All parse attempts failed. Returning empty profile.[/bold red]"
+    )
+    return {}
+
+
+def salvage_json_substring(raw_str: str) -> Optional[dict]:
+    """
+    Attempt to find the first '{' and last '}' in raw_str, parse that substring as JSON.
+    If it fails, return None.
+    """
+    start_idx = raw_str.find("{")
+    end_idx = raw_str.rfind("}")
+    if start_idx == -1 or end_idx == -1 or end_idx < start_idx:
+        console.print("[red]Could not find matching braces in GPT output.[/red]")
+        return None
+
+    candidate = raw_str[start_idx : end_idx + 1]
     try:
-        raw = call_openai_chat(final_prompt)
-        # Attempt to parse JSON
-        console.log("[bold green]Partial Consolidation Response:[/]", raw[:150], "...")
-        return json.loads(raw)
-    except Exception as e:
-        console.print(f"[red]Error in pass_through_gpt_for_json:[/] {e}")
-        return {}
+        return json.loads(candidate)
+    except json.JSONDecodeError as e:
+        console.print(f"[red]json.JSONDecodeError in salvage_json_substring:[/] {e}")
+        return None
 
 
 def call_openai_chat(prompt: str) -> str:

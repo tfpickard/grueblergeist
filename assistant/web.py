@@ -33,14 +33,13 @@ def load_json(file_path):
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
-    """Handle chat interactions."""
     data = request.get_json()
     user_message = data.get("message", "")
-    assistant_reply = assistant.reply(user_message)
-    print("\n\n")
-    print(jsonify({"reply": assistant_reply}))
-    print(assistant_reply)
-    print("\n\n")
+    strict_enforcement = data.get("strictEnforcement", False)  # boolean
+
+    # Now call ChatAssistant with that param
+    assistant_reply = assistant.reply(user_message, strict_enforcement)
+
     return jsonify({"reply": assistant_reply})
 
 
