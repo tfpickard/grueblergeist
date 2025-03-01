@@ -113,14 +113,6 @@ def main():
             break
         if len(chunk) - i < 10:
             break
-        x = 0
-        while x <= 0.0:
-            x = random.normalvariate(mu, sigma)
-        x = int(x)
-
-        if STOP_EARLY and i % (1 + x) != 0:
-            # print(f"Skipping chunk {i}...")
-            continue
         else:
             nchunks += 1
             # print(f"Chunk {nchunks} of {len(chunks)}")
