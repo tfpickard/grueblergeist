@@ -13,9 +13,12 @@ from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import os
+import logging
 from typing import List
 from rich.console import Console
 from rich.table import Table
+
+logging.basicConfig(filename="profile_build.log", level=logging.INFO, format="%(asctime)s %(message)s")
 
 console = Console()
 
@@ -92,14 +95,18 @@ def main():
     console.print(f"[green]Created {len(chunks)} chunks.[/green]")
 
     profiles = []
+    logging.info("Starting profile analysis.")
     for idx, chunk in enumerate(chunks, start=1):
         console.print(f"[bold cyan]Analyzing chunk {idx}/{len(chunks)}...[/bold cyan]")
         profile = analyze_chunk(chunk)
         profiles.append(profile)
+        logging.info(f"Chunk {idx} analyzed: {json.dumps(profile)}")
         console.print(f"[green]Chunk {idx} analyzed successfully.[/green]")
 
     console.print("[bold cyan]Consolidating profiles...[/bold cyan]")
+    logging.info("Starting profile consolidation.")
     consolidated_profile = consolidate_profiles(profiles)
+    logging.info(f"Consolidated profile: {json.dumps(consolidated_profile)}")
 
     table = Table(title="Consolidated User Profile")
     table.add_column("Attribute", style="magenta", no_wrap=True)
