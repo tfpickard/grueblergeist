@@ -203,6 +203,7 @@ def calculate_question_frequency(profiles: List[dict]) -> int:
     """Calculate question frequency from profiles."""
     # Placeholder logic for question frequency
     return sum(profile.get("question_frequency", 0) for profile in profiles) // len(profiles)
+def save_profile(profile: dict, file_path: str) -> None:
     """Save the consolidated profile to a JSON file."""
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(profile, file, indent=4)
