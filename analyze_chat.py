@@ -108,6 +108,7 @@ Chat History:
         try:
             # Attempt to parse the raw content as JSON
             style_profile = json.loads(raw_content)
+            console.print("[green]Parsed JSON:[/]\n", json.dumps(style_profile, indent=2))
             return style_profile
         except json.JSONDecodeError:
             console.print("[red]Failed to parse JSON response. Raw content:[/]\n", raw_content)
