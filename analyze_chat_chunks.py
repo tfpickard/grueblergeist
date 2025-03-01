@@ -59,6 +59,8 @@ def main():
             )
             exit(1)
         console.print(
+            f"[bold blue]Average actual time per chunk: {avg_actual_time:.2f}s.[/bold blue]"
+        )
             "\n[bold yellow]Process interrupted. Finalizing current chunk and generating profile...[/bold yellow]"
         )
         interrupted = True
@@ -100,6 +102,9 @@ def main():
     total_time = 0
     total_cost = 0.0
     cost_per_token = 0.000002  # Example cost per token for gpt-3.5-turbo
+    actual_times = []  # Track actual times for each chunk
+    total_cost = 0.0
+    cost_per_token = 0.000002  # Example cost per token for gpt-3.5-turbo
     for i, chunk in enumerate(
         track(chunks, description="Summarizing chunks...", console=console)
     ):
@@ -138,7 +143,10 @@ def main():
         elapsed_time = (end_time - start_time).total_seconds()
         total_time += elapsed_time
 
+        actual_times.append(elapsed_time)
+
         # Estimate completion
+        avg_actual_time = sum(actual_times) / len(actual_times)
         percent_complete = (i + 1) / len(chunks) * 100
         avg_time_per_chunk = total_time / (i + 1)
         estimated_time_remaining = avg_time_per_chunk * (len(chunks) - (i + 1))
