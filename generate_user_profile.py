@@ -136,13 +136,19 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
                 # Handle sentiment as a single string value
                 consolidated[key] = v if isinstance(v, str) else consolidated[key]
             else:
+                print(type(v))
                 if isinstance(v, str):
                     v = re.split(r",|and", v)
                     v = [x.strip() for x in v if x.strip()]
                 elif isinstance(v, list):
                     v = [x for x in v if isinstance(x, str)]
-                elif not isinstance(v, list):
+                # elif not isinstance(v, list):
+                else:
                     v = [f"{v}"]
+                print(v)
+                print(consolidated[key])
+                if not isinstance(consolidated[key], list):
+                    consolidated[key] = [] # [f"{consolidated[key]}"]
                 consolidated[key].extend(v)
     # Remove duplicates for list-type keys
     for key in ["tone", "style", "common_phrases", "preferred_topics"]:
