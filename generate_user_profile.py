@@ -87,7 +87,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
             console.print(
                 f"[bold yellow]JSON decoding failed on attempt {attempt}/{max_retries}![/bold yellow]"
             )
-            console.print(f"[bold red]Raw response:[/bold red]\n[red]{content}[/red]")
+            # console.print(f"[bold red]Raw response:[/bold red]\n[red]{content}[/red]")
             logging.warning(f"Badly formatted JSON response:\n{content}")
             logging.warning(
                 f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}"
@@ -145,8 +145,8 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
                 # elif not isinstance(v, list):
                 else:
                     v = [f"{v}"]
-                print(v)
-                print(consolidated[key])
+                # print(v)
+                # print(consolidated[key])
                 if not isinstance(consolidated[key], list):
                     consolidated[key] = [] # [f"{consolidated[key]}"]
                 consolidated[key].extend(v)
@@ -219,10 +219,10 @@ def convert_engagement_level_to_numeric(level: str) -> int:
     x = 1
     if "low" in level.lower():
         x = 1
-    elif "med" in level.lower():
-        x = 2
+    elif "med" in level.lower() or "mod" in level.lower():
+        x = 50
     elif "high" in level.lower():
-        x = 3
+        x = 100
     
         
     return x #level_mapping.get(level.lower(), 0)
