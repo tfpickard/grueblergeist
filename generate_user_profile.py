@@ -48,7 +48,7 @@ def chunk_conversations(conversations: List[dict], chunk_size: int) -> List[str]
     return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
 
-def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
+def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
     """Analyze a chunk of conversation data using OpenAI with retries."""
     prompt = f"""
     Analyze the following conversation data and provide a JSON summary with keys:
@@ -69,7 +69,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
         )
         content = response.choices[0].message.content.strip()
         try:
-            return json.loads(content)
+            return json.loads(content), response
         except json.JSONDecodeError:
             console.print(
                 f"[bold red]JSON decoding failed on attempt {attempt}/{max_retries}![/bold red]"
@@ -83,7 +83,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
             if json_match:
                 extracted_json = json_match.group(1)
                 try:
-                    return json.loads(extracted_json)
+                    return json.loads(extracted_json), response
                 except json.JSONDecodeError:
                     logging.warning(
                         f"Extracted JSON also failed to decode: {extracted_json}"
@@ -153,7 +153,7 @@ def main():
             break
 
         start_time = datetime.now()
-        profile = analyze_chunk(chunk)
+        profile, response = analyze_chunk(chunk)
         end_time = datetime.now()
         tokens_used = response.usage.total_tokens
         total_cost += tokens_used * cost_per_token
