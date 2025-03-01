@@ -100,17 +100,18 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
     }
     for profile in profiles:
         for key in consolidated.keys():
-            # if key == "tone" or key == "style":
-
             v = profile.get(key)
-            if isinstance(v, str):
-                v = re.split(r",|and", v)
-                v = [x.strip() for x in v if x.strip()]
-            elif isinstance(v, list):
-                v = [x for x in v if isinstance(x, str)]
-            elif not isinstance(v, list):
-                v = [f"{v}"]
-            consolidated[key].extend(v)
+            if key in ["average_sentence_length", "vocabulary_richness"]:
+                consolidated[key] += v if isinstance(v, (int, float)) else 0
+            else:
+                if isinstance(v, str):
+                    v = re.split(r",|and", v)
+                    v = [x.strip() for x in v if x.strip()]
+                elif isinstance(v, list):
+                    v = [x for x in v if isinstance(x, str)]
+                elif not isinstance(v, list):
+                    v = [f"{v}"]
+                consolidated[key].extend(v)
     # Remove duplicates
     for key in consolidated.keys():
         # print(f" --- {key} == {consolidated[key]}")
