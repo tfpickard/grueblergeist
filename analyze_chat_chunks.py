@@ -19,6 +19,7 @@ import os
 import random
 import time
 from typing import Optional
+from datetime import datetime
 
 import openai
 from openai import OpenAI
@@ -80,6 +81,7 @@ def main():
     # 3. Summarize each chunk individually
     chunk_summaries = []
     nchunks = 0
+    total_time = 0
     for i, chunk in enumerate(
         track(chunks, description="Summarizing chunks...", console=console)
     ):
@@ -99,7 +101,24 @@ def main():
             nchunks += 1
             # print(f"Chunk {nchunks} of {len(chunks)}")
 
+        start_time = datetime.now()
         summary = summarize_chunk(chunk, i + 1, len(chunks))
+        end_time = datetime.now()
+        elapsed_time = (end_time - start_time).total_seconds()
+        total_time += elapsed_time
+
+        # Estimate completion
+        percent_complete = (i + 1) / len(chunks) * 100
+        avg_time_per_chunk = total_time / (i + 1)
+        estimated_time_remaining = avg_time_per_chunk * (len(chunks) - (i + 1))
+
+        console.print(
+            f"[bold cyan]Chunk {i + 1}/{len(chunks)} processed in {elapsed_time:.2f}s.[/bold cyan]"
+        )
+        console.print(
+            f"[bold green]Estimated {percent_complete:.2f}% complete. "
+            f"Estimated time remaining: {estimated_time_remaining:.2f}s.[/bold green]"
+        )
         chunk_summaries.append(summary)
     print(f"Summarized {nchunks} chunks of {len(chunks)} ({nchunks/len(chunks)*100}%)")
     # 4. Multi-level consolidation of chunk summaries
