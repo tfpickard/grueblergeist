@@ -105,9 +105,13 @@ Chat History:
         raw_content = response.choices[0].message.content
         console.print("[green]Raw AI Analysis Received:[/]\n", raw_content)
 
-        # Attempt to parse the raw content as JSON
-        style_profile = json.loads(raw_content)
-        return style_profile
+        try:
+            # Attempt to parse the raw content as JSON
+            style_profile = json.loads(raw_content)
+            return style_profile
+        except json.JSONDecodeError:
+            console.print("[red]Failed to parse JSON response. Raw content:[/]\n", raw_content)
+            return {}
 
     except Exception as e:
         console.print(f"[red]Error calling OpenAI API:[/] {e}")
