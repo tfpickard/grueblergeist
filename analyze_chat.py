@@ -109,8 +109,10 @@ Chat History:
             # Attempt to parse the raw content as JSON
             style_profile = json.loads(raw_content)
             # Ensure tone and style are lists of strings
-            style_profile['tone'] = [''.join(style_profile['tone'])]
-            style_profile['style'] = [''.join(style_profile['style'])]
+            if isinstance(style_profile['tone'], str):
+                style_profile['tone'] = [style_profile['tone']]
+            if isinstance(style_profile['style'], str):
+                style_profile['style'] = [style_profile['style']]
             console.print("[green]Parsed JSON:[/]\n", json.dumps(style_profile, indent=2))
             return style_profile
         except json.JSONDecodeError:
