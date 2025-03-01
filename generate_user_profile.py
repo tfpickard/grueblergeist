@@ -87,7 +87,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
     raise ValueError("Failed to decode JSON after multiple retries.")
 
 
-def consolidate_profiles(profiles: List[dict]) -> dict:
+def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
     """Consolidate multiple profiles into a single profile."""
     # This is a simple example; you might want to implement a more sophisticated consolidation logic
     consolidated = {
@@ -243,7 +243,7 @@ def main():
             "[bold yellow]Interrupted: Generating profile from current progress...[/bold yellow]"
         )
     logging.info("Starting profile consolidation.")
-    consolidated_profile = consolidate_profiles(profiles)
+    consolidated_profile = consolidate_profiles(profiles, chunks)
     logging.info(f"Consolidated profile: {json.dumps(consolidated_profile)}")
 
     table = Table(title="Consolidated User Profile")
