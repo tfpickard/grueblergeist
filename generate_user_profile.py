@@ -6,12 +6,13 @@ Processes the data in chunks to avoid API usage limits.
 
 import json
 import os
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import os
 from typing import List
 
 # Set up OpenAI API client
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # File paths
 CONVERSATIONS_PATH = "data/conversations.json"
@@ -37,12 +38,10 @@ def analyze_chunk(chunk: str) -> dict:
     Conversation Data:
     {chunk}
     """
-    response = openai.Completion.create(
-        engine="gpt-4",
-        prompt=prompt,
-        max_tokens=500,
-        temperature=0.3
-    )
+    response = client.completions.create(engine="gpt-4",
+    prompt=prompt,
+    max_tokens=500,
+    temperature=0.3)
     return json.loads(response.choices[0].text.strip())
 
 def consolidate_profiles(profiles: List[dict]) -> dict:
