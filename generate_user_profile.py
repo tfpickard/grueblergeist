@@ -208,8 +208,9 @@ def main():
         start_time = datetime.now()
         profile, response = analyze_chunk(conversation)
         end_time = datetime.now()
-        tokens_used = response.usage.total_tokens
-        total_cost += tokens_used * cost_per_token
+        if response is not None:
+            tokens_used = response.usage.total_tokens
+            total_cost += tokens_used * cost_per_token
         chunk_size = len(conversation)
         word_count = len(conversation.split())
         total_words += word_count
