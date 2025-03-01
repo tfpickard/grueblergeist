@@ -14,6 +14,7 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import os
 import logging
+import re
 from typing import List
 from rich.console import Console
 from rich.table import Table
@@ -66,6 +67,13 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
             console.print(f"[yellow]Raw response:[/yellow]\n{content}")
             logging.warning(f"Badly formatted JSON response:\n{content}")
             logging.warning(f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}")
+            json_match = re.search(r"\{.*\}", content, re.DOTALL)
+            if json_match:
+                extracted_json = json_match.group(0)
+                try:
+                    return json.loads(extracted_json)
+                except json.JSONDecodeError:
+                    logging.warning(f"Extracted JSON also failed to decode: {extracted_json}")
     raise ValueError("Failed to decode JSON after multiple retries.")
 
 def consolidate_profiles(profiles: List[dict]) -> dict:
