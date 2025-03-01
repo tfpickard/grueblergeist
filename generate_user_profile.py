@@ -39,8 +39,8 @@ def chunk_conversations(conversations: List[dict], chunk_size: int) -> List[str]
     text = json.dumps(conversations)
     return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
 
-def analyze_chunk(chunk: str) -> dict:
-    """Analyze a chunk of conversation data using OpenAI."""
+def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
+    """Analyze a chunk of conversation data using OpenAI with retries."""
     prompt = f"""
     Analyze the following conversation data and provide a JSON summary with keys:
     "tone", "style", "common_phrases", "preferred_topics".
@@ -48,20 +48,24 @@ def analyze_chunk(chunk: str) -> dict:
     Conversation Data:
     {chunk}
     """
-    response = client.chat.completions.create(model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": prompt}
-    ],
-    max_tokens=500,
-    temperature=0.3)
-    content = response.choices[0].message.content.strip()
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError as e:
-        console.print("[bold red]JSON decoding failed![/bold red]")
-        console.print(f"[yellow]Raw response:[/yellow] {content}")
-        raise e
+    for attempt in range(1, max_retries + 1):
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=500,
+            temperature=0.3
+        )
+        content = response.choices[0].message.content.strip()
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            console.print(f"[bold red]JSON decoding failed on attempt {attempt}/{max_retries}![/bold red]")
+            console.print(f"[yellow]Raw response:[/yellow] {content}")
+            logging.warning(f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}")
+    raise ValueError("Failed to decode JSON after multiple retries.")
 
 def consolidate_profiles(profiles: List[dict]) -> dict:
     """Consolidate multiple profiles into a single profile."""
