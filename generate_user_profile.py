@@ -132,7 +132,9 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
             v = profile.get(key)
             if key in ["average_sentence_length", "vocabulary_richness"]:
                 consolidated[key] += v if isinstance(v, (int, float)) else 0
-            else:
+            elif key in ["sentiment"]:
+                # Handle sentiment as a single string value
+                consolidated[key] = v if isinstance(v, str) else consolidated[key]
                 if isinstance(v, str):
                     v = re.split(r",|and", v)
                     v = [x.strip() for x in v if x.strip()]
