@@ -216,7 +216,16 @@ def convert_engagement_level_to_numeric(level: str) -> int:
         "medium": 2,
         "high": 3
     }
-    return level_mapping.get(level.lower(), 0)
+    x = 1
+    if "low" in level.lower():
+        x = 1
+    elif "med" in level.lower():
+        x = 2
+    elif "high" in level.lower():
+        x = 3
+    
+        
+    return x #level_mapping.get(level.lower(), 0)
 
 def calculate_topic_diversity(profiles: List[dict]) -> int:
     """Calculate topic diversity from profiles."""
