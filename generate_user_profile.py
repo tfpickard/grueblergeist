@@ -136,6 +136,7 @@ def main():
     actual_times = []  # Track actual times for each chunk
     chunk_sizes = []  # Track sizes of each chunk
     interrupted = False
+    rolling_window_size = 10
     total_words = 0  # Track total words processed
 
     def signal_handler(sig, frame):
@@ -175,6 +176,12 @@ def main():
         elapsed_time = (end_time - start_time).total_seconds()
         total_time += elapsed_time
 
+        # Calculate rolling average of time per API call
+        if len(actual_times) > rolling_window_size:
+            rolling_avg_time = sum(actual_times[-rolling_window_size:]) / rolling_window_size
+        else:
+            rolling_avg_time = sum(actual_times) / len(actual_times)
+
         # Estimate completion
         actual_times.append(elapsed_time)
         avg_time_per_char = total_time / sum(chunk_sizes) if sum(chunk_sizes) > 0 else 0
@@ -204,6 +211,7 @@ def main():
         )
         total_elapsed_time_hms = str(timedelta(seconds=int(total_time)))
         table.add_row("Total Elapsed Time (hh:mm:ss)", total_elapsed_time_hms)
+        table.add_row("Rolling Avg Time per Call (s)", f"{rolling_avg_time:.2f}")
         table.add_row("Total Cost ($)", f"{total_cost:.6f}")
 
         console.print(Group(table))
