@@ -155,6 +155,8 @@ def main():
         start_time = datetime.now()
         profile = analyze_chunk(chunk)
         end_time = datetime.now()
+        tokens_used = response.usage.total_tokens
+        total_cost += tokens_used * cost_per_token
         chunk_size = len(chunk)
         word_count = len(chunk.split())
         total_words += word_count
@@ -164,10 +166,10 @@ def main():
 
         # Estimate completion
         actual_times.append(elapsed_time)
-        avg_time_per_char = total_time / sum(chunk_sizes)
+        avg_time_per_char = total_time / sum(chunk_sizes) if sum(chunk_sizes) > 0 else 0
         avg_time_per_word = total_time / total_words if total_words > 0 else 0
         percent_complete = (idx + 1) / len(chunks) * 100
-        remaining_chars = sum(chunk_sizes[idx + 1 :])
+        remaining_chars = sum(chunk_sizes[idx:])
         estimated_time_remaining = avg_time_per_char * remaining_chars
 
         table = Table(title=f"Chunk {idx}/{len(chunks)} Analysis")
