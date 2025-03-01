@@ -156,10 +156,53 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
         len(unique_words) / total_words if total_words > 0 else 0
     )
 
+    # Calculate average sentence length and vocabulary richness
+    total_sentences = sum(len(re.split(r"[.!?]", chunk)) for chunk in chunks)
+    total_words = sum(len(chunk.split()) for chunk in chunks)
+    consolidated["average_sentence_length"] = (
+        total_words / total_sentences if total_sentences > 0 else 0
+    )
+    unique_words = set(word for chunk in chunks for word in chunk.split())
+    consolidated["vocabulary_richness"] = (
+        len(unique_words) / total_words if total_words > 0 else 0
+    )
+
+    # Calculate sentiment, response time patterns, engagement level, topic diversity, and question frequency
+    consolidated["sentiment"] = calculate_sentiment(profiles)
+    consolidated["response_time_patterns"] = calculate_response_time_patterns(profiles)
+    consolidated["engagement_level"] = calculate_engagement_level(profiles)
+    consolidated["topic_diversity"] = calculate_topic_diversity(profiles)
+    consolidated["question_frequency"] = calculate_question_frequency(profiles)
+
     return consolidated
 
 
-def save_profile(profile: dict, file_path: str) -> None:
+def calculate_sentiment(profiles: List[dict]) -> str:
+    """Calculate the overall sentiment from profiles."""
+    # Placeholder logic for sentiment calculation
+    sentiments = [profile.get("sentiment", "neutral") for profile in profiles]
+    return max(set(sentiments), key=sentiments.count)
+
+def calculate_response_time_patterns(profiles: List[dict]) -> List[str]:
+    """Calculate response time patterns from profiles."""
+    # Placeholder logic for response time patterns
+    return ["consistent", "varied"]
+
+def calculate_engagement_level(profiles: List[dict]) -> int:
+    """Calculate engagement level from profiles."""
+    # Placeholder logic for engagement level
+    return sum(profile.get("engagement_level", 0) for profile in profiles) // len(profiles)
+
+def calculate_topic_diversity(profiles: List[dict]) -> int:
+    """Calculate topic diversity from profiles."""
+    # Placeholder logic for topic diversity
+    topics = [topic for profile in profiles for topic in profile.get("preferred_topics", [])]
+    return len(set(topics))
+
+def calculate_question_frequency(profiles: List[dict]) -> int:
+    """Calculate question frequency from profiles."""
+    # Placeholder logic for question frequency
+    return sum(profile.get("question_frequency", 0) for profile in profiles) // len(profiles)
     """Save the consolidated profile to a JSON file."""
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(profile, file, indent=4)
