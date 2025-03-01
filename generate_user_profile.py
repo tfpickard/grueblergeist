@@ -112,11 +112,10 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
                 elif not isinstance(v, list):
                     v = [f"{v}"]
                 consolidated[key].extend(v)
-    # Remove duplicates
-    for key in consolidated.keys():
-        # print(f" --- {key} == {consolidated[key]}")
+    # Remove duplicates for list-type keys
+    for key in ["tone", "style", "common_phrases", "preferred_topics"]:
         consolidated[key] = list(set(consolidated[key]))
-        # print(f" --- {key} == {consolidated[key]}\n")
+
     # Calculate average sentence length and vocabulary richness
     total_sentences = sum(len(re.split(r"[.!?]", chunk)) for chunk in chunks)
     total_words = sum(len(chunk.split()) for chunk in chunks)
