@@ -135,6 +135,7 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
             elif key in ["sentiment"]:
                 # Handle sentiment as a single string value
                 consolidated[key] = v if isinstance(v, str) else consolidated[key]
+            else:
                 if isinstance(v, str):
                     v = re.split(r",|and", v)
                     v = [x.strip() for x in v if x.strip()]
