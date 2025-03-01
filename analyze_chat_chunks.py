@@ -18,6 +18,7 @@ import math
 import os
 import random
 import time
+import signal
 from typing import Optional
 from datetime import datetime
 
@@ -48,6 +49,21 @@ console = Console()
 # MAIN ENTRY
 # -------------------------------------------------------------------
 def main():
+    interrupted = False
+
+    def signal_handler(sig, frame):
+        nonlocal interrupted
+        if interrupted:
+            console.print(
+                "\n[bold red]Process interrupted again. Exiting immediately...[/bold red]"
+            )
+            exit(1)
+        console.print(
+            "\n[bold yellow]Process interrupted. Finalizing current chunk and generating profile...[/bold yellow]"
+        )
+        interrupted = True
+
+    signal.signal(signal.SIGINT, signal_handler)
     # if not openai.api_key:
     #     console.print("[bold red]Error:[/] OPENAI_API_KEY is not set.", style="red")
     #     return
@@ -87,6 +103,8 @@ def main():
     for i, chunk in enumerate(
         track(chunks, description="Summarizing chunks...", console=console)
     ):
+        if interrupted:
+            break
         if STOP_EARLY and i >= 40:
             break
         if len(chunk) - i < 10:
@@ -137,6 +155,11 @@ def main():
         f"[bold green]Total cost of API calls: ${total_cost:.6f}[/bold green]"
     )
     print(f"Summarized {nchunks} chunks of {len(chunks)} ({nchunks/len(chunks)*100}%)")
+    if interrupted:
+        console.print(
+            "[bold yellow]Interrupted: Generating profile from current progress...[/bold yellow]"
+        )
+
     # 4. Multi-level consolidation of chunk summaries
     console.print(
         f"[blue]Multi-level consolidation of {nchunks} chunk summaries...[/blue]"
