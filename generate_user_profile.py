@@ -29,8 +29,6 @@ logging.basicConfig(
 
 console = Console()
 
-# Set up OpenAI API client
-
 # File paths
 CONVERSATIONS_PATH = "data/conversations.json"
 STYLE_PROFILE_PATH = "data/user_style_profile.json"
