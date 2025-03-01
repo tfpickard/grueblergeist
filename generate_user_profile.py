@@ -52,7 +52,13 @@ def analyze_chunk(chunk: str) -> dict:
     ],
     max_tokens=500,
     temperature=0.3)
-    return json.loads(response.choices[0].message.content.strip())
+    content = response.choices[0].message.content.strip()
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError as e:
+        console.print("[bold red]JSON decoding failed![/bold red]")
+        console.print(f"[yellow]Raw response:[/yellow] {content}")
+        raise e
 
 def consolidate_profiles(profiles: List[dict]) -> dict:
     """Consolidate multiple profiles into a single profile."""
