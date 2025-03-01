@@ -231,7 +231,13 @@ def calculate_topic_diversity(profiles: List[dict]) -> int:
     """Calculate topic diversity from profiles."""
     # Placeholder logic for topic diversity
     topics = [topic for profile in profiles for topic in profile.get("preferred_topics", [])]
-    return len(set(topics))
+    unique_topics = set()
+    for topic in topics:
+        if isinstance(topic, str):
+            unique_topics.add(topic)
+        elif isinstance(topic, (int, float)):
+            unique_topics.add(str(topic))
+    return len(unique_topics)
 
 def calculate_question_frequency(profiles: List[dict]) -> int:
     """Calculate question frequency from profiles."""
