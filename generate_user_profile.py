@@ -200,7 +200,23 @@ def calculate_response_time_patterns(profiles: List[dict]) -> List[str]:
 def calculate_engagement_level(profiles: List[dict]) -> int:
     """Calculate engagement level from profiles."""
     # Placeholder logic for engagement level
-    return sum(profile.get("engagement_level", 0) for profile in profiles) // len(profiles)
+    total_engagement = 0
+    for profile in profiles:
+        level = profile.get("engagement_level", 0)
+        if isinstance(level, str):
+            # Convert string levels to numeric values
+            level = convert_engagement_level_to_numeric(level)
+        total_engagement += level
+    return total_engagement // len(profiles)
+
+def convert_engagement_level_to_numeric(level: str) -> int:
+    """Convert string engagement levels to numeric values."""
+    level_mapping = {
+        "low": 1,
+        "medium": 2,
+        "high": 3
+    }
+    return level_mapping.get(level.lower(), 0)
 
 def calculate_topic_diversity(profiles: List[dict]) -> int:
     """Calculate topic diversity from profiles."""
