@@ -169,7 +169,7 @@ def main():
         avg_time_per_char = total_time / sum(chunk_sizes) if sum(chunk_sizes) > 0 else 0
         avg_time_per_word = total_time / total_words if total_words > 0 else 0
         percent_complete = (idx + 1) / len(chunks) * 100
-        remaining_chars = sum(chunk_sizes[idx:])
+        remaining_chars = sum(chunk_sizes[idx + 1:])
         estimated_time_remaining = avg_time_per_char * remaining_chars
 
         table = Table(title=f"Chunk {idx}/{len(chunks)} Analysis")
