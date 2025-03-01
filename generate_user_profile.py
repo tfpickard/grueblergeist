@@ -41,6 +41,7 @@ def load_conversations(file_path: str) -> List[dict]:
 def extract_conversations(conversations: List[dict]) -> List[str]:
     """Extract individual conversations for analysis."""
     extracted_conversations = []
+    random.shuffle(conversations)
     for convo in conversations:
         if "mapping" not in convo:
             continue
@@ -84,14 +85,15 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
         try:
             return json.loads(content), response
         except json.JSONDecodeError:
-            console.print(
-                f"[bold yellow]JSON decoding failed on attempt {attempt}/{max_retries}![/bold yellow]"
-            )
             # console.print(f"[bold red]Raw response:[/bold red]\n[red]{content}[/red]")
-            logging.warning(f"Badly formatted JSON response:\n{content}")
-            logging.warning(
-                f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}"
-            )
+            if attempt > 1:
+                console.print(
+                    f"[bold yellow]JSON decoding failed on attempt {attempt}/{max_retries}![/bold yellow]"
+                )
+                logging.warning(f"Badly formatted JSON response:\n{content}")
+                logging.warning(
+                    f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}"
+                )
             # json_match = re.search(r"```json\s*({.*?})\s*```", content, re.DOTALL)
             # if not json_match:
             # json_match = re.search(r"({.*?})", content, re.DOTALL)
@@ -136,7 +138,6 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
                 # Handle sentiment as a single string value
                 consolidated[key] = v if isinstance(v, str) else consolidated[key]
             else:
-                print(type(v))
                 if isinstance(v, str):
                     v = re.split(r",|and", v)
                     v = [x.strip() for x in v if x.strip()]
