@@ -236,7 +236,23 @@ def calculate_topic_diversity(profiles: List[dict]) -> int:
 def calculate_question_frequency(profiles: List[dict]) -> int:
     """Calculate question frequency from profiles."""
     # Placeholder logic for question frequency
-    return sum(profile.get("question_frequency", 0) for profile in profiles) // len(profiles)
+    total_questions = 0
+    for profile in profiles:
+        frequency = profile.get("question_frequency", 0)
+        if isinstance(frequency, str):
+            # Convert string frequencies to numeric values
+            frequency = convert_question_frequency_to_numeric(frequency)
+        total_questions += frequency
+    return total_questions // len(profiles)
+
+def convert_question_frequency_to_numeric(frequency: str) -> int:
+    """Convert string question frequencies to numeric values."""
+    frequency_mapping = {
+        "low": 1,
+        "medium": 2,
+        "high": 3
+    }
+    return frequency_mapping.get(frequency.lower(), 0)
 def save_profile(profile: dict, file_path: str) -> None:
     """Save the consolidated profile to a JSON file."""
     with open(file_path, "w", encoding="utf-8") as file:
