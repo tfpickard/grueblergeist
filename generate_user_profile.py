@@ -119,13 +119,13 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
         "style": [],
         "common_phrases": [],
         "preferred_topics": [],
-        "average_sentence_length": 0,
-        "vocabulary_richness": 0,
+        "average_sentence_length": 0.0,
+        "vocabulary_richness": 0.0,
         "sentiment": "neutral",
         "response_time_patterns": [],
-        "engagement_level": 0,
-        "topic_diversity": 0,
-        "question_frequency": 0,
+        "engagement_level": 0.0,
+        "topic_diversity": 0.0,
+        "question_frequency": 0.0,
     }
     for profile in profiles:
         for key in consolidated.keys():
@@ -207,7 +207,7 @@ def calculate_engagement_level(profiles: List[dict]) -> int:
             # Convert string levels to numeric values
             level = convert_engagement_level_to_numeric(level)
         total_engagement += level
-    return total_engagement // len(profiles)
+    return total_engagement / len(profiles)
 
 def convert_engagement_level_to_numeric(level: str) -> int:
     """Convert string engagement levels to numeric values."""
@@ -237,7 +237,7 @@ def calculate_topic_diversity(profiles: List[dict]) -> int:
             unique_topics.add(topic)
         elif isinstance(topic, (int, float)):
             unique_topics.add(str(topic))
-    return len(unique_topics)
+    return float(len(unique_topics))
 
 def calculate_question_frequency(profiles: List[dict]) -> int:
     """Calculate question frequency from profiles."""
@@ -250,7 +250,7 @@ def calculate_question_frequency(profiles: List[dict]) -> int:
             # frequency = convert_question_frequency_to_numeric(frequency)
             frequency = convert_engagement_level_to_numeric(frequency)
         total_questions += frequency
-    return total_questions // len(profiles)
+    return total_questions / len(profiles)
 
 def convert_question_frequency_to_numeric(frequency: str) -> int:
     """Convert string question frequencies to numeric values."""
