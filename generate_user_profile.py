@@ -241,7 +241,8 @@ def calculate_question_frequency(profiles: List[dict]) -> int:
         frequency = profile.get("question_frequency", 0)
         if isinstance(frequency, str):
             # Convert string frequencies to numeric values
-            frequency = convert_question_frequency_to_numeric(frequency)
+            # frequency = convert_question_frequency_to_numeric(frequency)
+            frequency = convert_engagement_level_to_numeric(frequency)
         total_questions += frequency
     return total_questions // len(profiles)
 
