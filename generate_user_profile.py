@@ -58,7 +58,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
     """
     for attempt in range(1, max_retries + 1):
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt},
@@ -161,7 +161,7 @@ def main():
     """
 
     persona_response = client.chat.completions.create(
-        model="gpt-4.5-preview",
+        model="gpt-3.5-turbo",
         messages=[
             {
                 "role": "system",
