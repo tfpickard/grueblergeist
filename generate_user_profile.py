@@ -48,7 +48,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
     """Analyze a chunk of conversation data using OpenAI with retries."""
     prompt = f"""
     Analyze the following conversation data and provide a JSON summary with keys:
-    "tone", "style", "common_phrases", "preferred_topics".
+    "tone", "style", "common_phrases", "preferred_topics", "average_sentence_length", "vocabulary_richness".
 
     Conversation Data:
     {chunk}
@@ -95,6 +95,8 @@ def consolidate_profiles(profiles: List[dict]) -> dict:
         "style": [],
         "common_phrases": [],
         "preferred_topics": [],
+        "average_sentence_length": 0,
+        "vocabulary_richness": 0,
     }
     for profile in profiles:
         for key in consolidated.keys():
@@ -112,6 +114,13 @@ def consolidate_profiles(profiles: List[dict]) -> dict:
         # print(f" --- {key} == {consolidated[key]}")
         consolidated[key] = list(set(consolidated[key]))
         # print(f" --- {key} == {consolidated[key]}\n")
+    # Calculate average sentence length and vocabulary richness
+    total_sentences = sum(len(re.split(r'[.!?]', chunk)) for chunk in chunks)
+    total_words = sum(len(chunk.split()) for chunk in chunks)
+    consolidated["average_sentence_length"] = total_words / total_sentences if total_sentences > 0 else 0
+    unique_words = set(word for chunk in chunks for word in chunk.split())
+    consolidated["vocabulary_richness"] = len(unique_words) / total_words if total_words > 0 else 0
+
     return consolidated
 
 
