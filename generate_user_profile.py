@@ -125,5 +125,32 @@ def main():
     save_profile(consolidated_profile, STYLE_PROFILE_PATH)
     console.print(f"[bold green]User style profile saved to {STYLE_PROFILE_PATH}[/bold green]")
 
+    console.print("[bold cyan]Generating detailed persona analysis...[/bold cyan]")
+    persona_prompt = f"""
+    Given the following user style profile, generate an extremely detailed persona description.
+    Include personality traits, likely interests, communication style, and any other relevant details.
+
+    User Style Profile:
+    {json.dumps(consolidated_profile, indent=2)}
+    """
+
+    persona_response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are an expert in user profiling and persona creation."},
+            {"role": "user", "content": persona_prompt}
+        ],
+        max_tokens=1000,
+        temperature=0.5
+    )
+
+    detailed_persona = persona_response.choices[0].message.content.strip()
+
+    persona_path = "data/detailed_persona.txt"
+    with open(persona_path, "w", encoding="utf-8") as persona_file:
+        persona_file.write(detailed_persona)
+
+    console.print(f"[bold green]Detailed persona analysis saved to {persona_path}[/bold green]")
+
 if __name__ == "__main__":
     main()
