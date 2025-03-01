@@ -22,6 +22,7 @@ from datetime import datetime
 
 from rich.console import Console
 from rich.table import Table
+from rich.console import Group
 
 logging.basicConfig(
     filename="profile_build.log", level=logging.INFO, format="%(asctime)s %(message)s"
@@ -169,16 +170,18 @@ def main():
         remaining_chars = sum(chunk_sizes[idx + 1 :])
         estimated_time_remaining = avg_time_per_char * remaining_chars
 
-        console.print(
-            f"[bold cyan]Chunk {idx}/{len(chunks)} processed in {elapsed_time:.2f}s.[/bold cyan]"
-        )
-        console.print(
-            f"[bold green]Estimated {percent_complete:.2f}% complete. "
-            f"Estimated time remaining: {estimated_time_remaining:.2f}s.[/bold green]"
-        )
-        console.print(
-            f"[bold blue]Average time per word: {avg_time_per_word:.4f}s.[/bold blue]"
-        )
+        table = Table(title=f"Chunk {idx}/{len(chunks)} Analysis")
+
+        table.add_column("Metric", style="magenta")
+        table.add_column("Value", style="cyan")
+
+        table.add_row("Elapsed Time (s)", f"{elapsed_time:.2f}")
+        table.add_row("Percent Complete", f"{percent_complete:.2f}%")
+        table.add_row("Estimated Time Remaining (s)", f"{estimated_time_remaining:.2f}")
+        table.add_row("Average Time per Word (s)", f"{avg_time_per_word:.4f}")
+        table.add_row("Total Cost ($)", f"{total_cost:.6f}")
+
+        console.print(Group(table))
         profiles.append(profile)
         logging.info(f"Chunk {idx} analyzed: {json.dumps(profile)}")
         console.print(f"[green]Chunk {idx} analyzed successfully.[/green]")
