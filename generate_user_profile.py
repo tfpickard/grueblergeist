@@ -92,6 +92,9 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
                 f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}"
             )
             json_match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.DOTALL)
+            if not json_match:
+                json_match = re.search(r"\{.*?\}", content, re.DOTALL)
+
             if json_match:
                 extracted_json = json_match.group(1)
                 try:
@@ -159,7 +162,9 @@ def main():
 
     console.print("[bold cyan]Extracting individual conversations...[/bold cyan]")
     extracted_conversations = extract_conversations(conversations)
-    console.print(f"[green]Extracted {len(extracted_conversations)} conversations.[/green]")
+    console.print(
+        f"[green]Extracted {len(extracted_conversations)} conversations.[/green]"
+    )
 
     profiles = []
     total_time = 0
@@ -232,7 +237,9 @@ def main():
             avg_time_per_char * remaining_chars if remaining_chars > 0 else 999
         )
 
-        table = Table(title=f"Conversation {idx}/{len(extracted_conversations)} Analysis")
+        table = Table(
+            title=f"Conversation {idx}/{len(extracted_conversations)} Analysis"
+        )
 
         table.add_column("Metric", style="magenta")
         table.add_column("Value", style="cyan")
