@@ -14,6 +14,10 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import os
 from typing import List
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
 
 # Set up OpenAI API client
 
@@ -73,12 +77,35 @@ def save_profile(profile: dict, file_path: str) -> None:
         json.dump(profile, file, indent=4)
 
 def main():
+    console.print("[bold cyan]Loading conversations...[/bold cyan]")
     conversations = load_conversations(CONVERSATIONS_PATH)
+    console.print(f"[green]Loaded {len(conversations)} conversations.[/green]")
+
+    console.print("[bold cyan]Chunking conversations...[/bold cyan]")
     chunks = chunk_conversations(conversations, CHUNK_SIZE)
-    profiles = [analyze_chunk(chunk) for chunk in chunks]
+    console.print(f"[green]Created {len(chunks)} chunks.[/green]")
+
+    profiles = []
+    for idx, chunk in enumerate(chunks, start=1):
+        console.print(f"[bold cyan]Analyzing chunk {idx}/{len(chunks)}...[/bold cyan]")
+        profile = analyze_chunk(chunk)
+        profiles.append(profile)
+        console.print(f"[green]Chunk {idx} analyzed successfully.[/green]")
+
+    console.print("[bold cyan]Consolidating profiles...[/bold cyan]")
     consolidated_profile = consolidate_profiles(profiles)
+
+    table = Table(title="Consolidated User Profile")
+    table.add_column("Attribute", style="magenta", no_wrap=True)
+    table.add_column("Values", style="yellow")
+
+    for key, values in consolidated_profile.items():
+        table.add_row(key, ", ".join(values))
+
+    console.print(table)
+
     save_profile(consolidated_profile, STYLE_PROFILE_PATH)
-    print(f"User style profile saved to {STYLE_PROFILE_PATH}")
+    console.print(f"[bold green]User style profile saved to {STYLE_PROFILE_PATH}[/bold green]")
 
 if __name__ == "__main__":
     main()
