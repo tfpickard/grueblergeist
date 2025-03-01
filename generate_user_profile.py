@@ -38,10 +38,24 @@ def load_conversations(file_path: str) -> List[dict]:
         return json.load(file)
 
 
-def chunk_conversations(conversations: List[dict], chunk_size: int) -> List[str]:
-    """Chunk conversations into manageable pieces."""
-    text = json.dumps(conversations)
-    return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
+def extract_conversations(conversations: List[dict]) -> List[str]:
+    """Extract individual conversations for analysis."""
+    extracted_conversations = []
+    for convo in conversations:
+        if "mapping" not in convo:
+            continue
+        messages = []
+        for turn in convo["mapping"].values():
+            if isinstance(turn, dict) and "message" in turn:
+                message = turn["message"]
+                if message and message.get("author", {}).get("role") == "user":
+                    content = message.get("content", {})
+                    if isinstance(content, str):
+                        messages.append(content)
+                    elif isinstance(content, dict) and "parts" in content:
+                        messages.append(content["parts"][0])
+        extracted_conversations.append(" ".join(messages))
+    return extracted_conversations
 
 
 def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
@@ -141,9 +155,9 @@ def main():
     conversations = load_conversations(CONVERSATIONS_PATH)
     console.print(f"[green]Loaded {len(conversations)} conversations.[/green]")
 
-    console.print("[bold cyan]Chunking conversations...[/bold cyan]")
-    chunks = chunk_conversations(conversations, CHUNK_SIZE)
-    console.print(f"[green]Created {len(chunks)} chunks.[/green]")
+    console.print("[bold cyan]Extracting individual conversations...[/bold cyan]")
+    extracted_conversations = extract_conversations(conversations)
+    console.print(f"[green]Extracted {len(extracted_conversations)} conversations.[/green]")
 
     profiles = []
     total_time = 0
@@ -173,15 +187,15 @@ def main():
     for idx, chunk in enumerate(chunks, start=0):
         total_bytes += len(chunk)
     # random.shuffle(chunks)
-    for idx, chunk in enumerate(chunks, start=1):
+    for idx, conversation in enumerate(extracted_conversations, start=1):
         console.print(
-            f"[bold cyan]Analyzing {len(chunk)}-byte chunk {idx}/{len(chunks)}...[/bold cyan]"
+            f"[bold cyan]Analyzing conversation {idx}/{len(extracted_conversations)}...[/bold cyan]"
         )
         if interrupted:
             break
 
         start_time = datetime.now()
-        profile, response = analyze_chunk(chunk)
+        profile, response = analyze_chunk(conversation)
         end_time = datetime.now()
         tokens_used = response.usage.total_tokens
         total_cost += tokens_used * cost_per_token
