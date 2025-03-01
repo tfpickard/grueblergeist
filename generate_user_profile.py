@@ -53,7 +53,9 @@ def extract_conversations(conversations: List[dict]) -> List[str]:
                     if isinstance(content, str):
                         messages.append(content)
                     elif isinstance(content, dict) and "parts" in content:
-                        messages.append(content["parts"][0])
+                        part = content["parts"][0]
+                        if isinstance(part, str):
+                            messages.append(part)
         extracted_conversations.append(" ".join(messages))
     return extracted_conversations
 
