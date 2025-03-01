@@ -67,7 +67,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
             console.print(f"[yellow]Raw response:[/yellow]\n{content}")
             logging.warning(f"Badly formatted JSON response:\n{content}")
             logging.warning(f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}")
-            json_match = re.search(r"\{.*\}", content, re.DOTALL)
+            json_match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.DOTALL)
             if json_match:
                 extracted_json = json_match.group(0)
                 try:
