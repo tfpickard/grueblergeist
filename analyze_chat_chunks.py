@@ -82,6 +82,8 @@ def main():
     chunk_summaries = []
     nchunks = 0
     total_time = 0
+    total_cost = 0.0
+    cost_per_token = 0.000002  # Example cost per token for gpt-3.5-turbo
     for i, chunk in enumerate(
         track(chunks, description="Summarizing chunks...", console=console)
     ):
@@ -102,7 +104,18 @@ def main():
             # print(f"Chunk {nchunks} of {len(chunks)}")
 
         start_time = datetime.now()
-        summary = summarize_chunk(chunk, i + 1, len(chunks))
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": chunk},
+            ],
+            max_tokens=500,
+            temperature=0.3,
+        )
+        summary = response.choices[0].message.content.strip()
+        tokens_used = response.usage.total_tokens
+        total_cost += tokens_used * cost_per_token
         end_time = datetime.now()
         elapsed_time = (end_time - start_time).total_seconds()
         total_time += elapsed_time
@@ -120,6 +133,9 @@ def main():
             f"Estimated time remaining: {estimated_time_remaining:.2f}s.[/bold green]"
         )
         chunk_summaries.append(summary)
+    console.print(
+        f"[bold green]Total cost of API calls: ${total_cost:.6f}[/bold green]"
+    )
     print(f"Summarized {nchunks} chunks of {len(chunks)} ({nchunks/len(chunks)*100}%)")
     # 4. Multi-level consolidation of chunk summaries
     console.print(
