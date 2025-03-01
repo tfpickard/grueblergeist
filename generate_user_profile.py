@@ -7,6 +7,7 @@ Processes the data in chunks to avoid API usage limits.
 import json
 import logging
 import os
+import random
 import re
 import signal
 from datetime import datetime, timedelta
@@ -156,7 +157,7 @@ def main():
     total_bytes = 0
     for idx, chunk in enumerate(chunks, start=0):
         total_bytes += len(chunk)
-
+    random.shuffle(chunks)
     for idx, chunk in enumerate(chunks, start=1):
         console.print(
             f"[bold cyan]Analyzing {len(chunk)}-byte chunk {idx}/{len(chunks)}...[/bold cyan]"
@@ -178,9 +179,14 @@ def main():
 
         # Calculate rolling average of time per API call
         if len(actual_times) > rolling_window_size:
-            rolling_avg_time = sum(actual_times[-rolling_window_size:]) / rolling_window_size
+            rolling_avg_time = (
+                sum(actual_times[-rolling_window_size:]) / rolling_window_size
+            )
         else:
-            rolling_avg_time = sum(actual_times) / len(actual_times)
+            if len(actual_times) > 0:
+                rolling_avg_time = sum(actual_times) / len(actual_times)
+            else:
+                rolling_avg_time = 999
 
         # Estimate completion
         actual_times.append(elapsed_time)
