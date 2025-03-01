@@ -184,8 +184,8 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     logging.info("Starting profile analysis.")
     total_bytes = 0
-    for idx, chunk in enumerate(chunks, start=0):
-        total_bytes += len(chunk)
+    for idx, conversation in enumerate(extracted_conversations, start=0):
+        total_bytes += len(conversation)
     # random.shuffle(chunks)
     for idx, conversation in enumerate(extracted_conversations, start=1):
         console.print(
@@ -221,7 +221,7 @@ def main():
         actual_times.append(elapsed_time)
         avg_time_per_char = total_time / sum(chunk_sizes) if sum(chunk_sizes) > 0 else 0
         avg_time_per_word = total_time / total_words if total_words > 0 else 0
-        percent_complete = (idx + 1) / len(chunks) * 100
+        percent_complete = (idx + 1) / len(extracted_conversations) * 100
         # remaining_chars = sum(chunk_sizes[(idx - 1):])
         remaining_chars = total_bytes - sum(chunk_sizes)
         # print(f"Chunk {idx} size: {chunk_sizes[idx-1]}")
@@ -230,7 +230,7 @@ def main():
             avg_time_per_char * remaining_chars if remaining_chars > 0 else 999
         )
 
-        table = Table(title=f"Chunk {idx}/{len(chunks)} Analysis")
+        table = Table(title=f"Conversation {idx}/{len(extracted_conversations)} Analysis")
 
         table.add_column("Metric", style="magenta")
         table.add_column("Value", style="cyan")
@@ -263,7 +263,7 @@ def main():
             "[bold yellow]Interrupted: Generating profile from current progress...[/bold yellow]"
         )
     logging.info("Starting profile consolidation.")
-    consolidated_profile = consolidate_profiles(profiles, chunks)
+    consolidated_profile = consolidate_profiles(profiles, extracted_conversations)
     logging.info(f"Consolidated profile: {json.dumps(consolidated_profile)}")
 
     table = Table(title="Consolidated User Profile")
