@@ -63,7 +63,8 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> dict:
             return json.loads(content)
         except json.JSONDecodeError:
             console.print(f"[bold red]JSON decoding failed on attempt {attempt}/{max_retries}![/bold red]")
-            console.print(f"[yellow]Raw response:[/yellow] {content}")
+            console.print(f"[yellow]Raw response:[/yellow]\n{content}")
+            logging.warning(f"Badly formatted JSON response:\n{content}")
             logging.warning(f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}")
     raise ValueError("Failed to decode JSON after multiple retries.")
 
