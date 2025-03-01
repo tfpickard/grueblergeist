@@ -108,6 +108,8 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
                 v = [x.strip() for x in v if x.strip()]
             elif isinstance(v, list):
                 v = [x for x in v if isinstance(x, str)]
+            elif not isinstance(v, list):
+                v = [f"{v}"]
             consolidated[key].extend(v)
     # Remove duplicates
     for key in consolidated.keys():
@@ -115,11 +117,15 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
         consolidated[key] = list(set(consolidated[key]))
         # print(f" --- {key} == {consolidated[key]}\n")
     # Calculate average sentence length and vocabulary richness
-    total_sentences = sum(len(re.split(r'[.!?]', chunk)) for chunk in chunks)
+    total_sentences = sum(len(re.split(r"[.!?]", chunk)) for chunk in chunks)
     total_words = sum(len(chunk.split()) for chunk in chunks)
-    consolidated["average_sentence_length"] = total_words / total_sentences if total_sentences > 0 else 0
+    consolidated["average_sentence_length"] = (
+        total_words / total_sentences if total_sentences > 0 else 0
+    )
     unique_words = set(word for chunk in chunks for word in chunk.split())
-    consolidated["vocabulary_richness"] = len(unique_words) / total_words if total_words > 0 else 0
+    consolidated["vocabulary_richness"] = (
+        len(unique_words) / total_words if total_words > 0 else 0
+    )
 
     return consolidated
 
