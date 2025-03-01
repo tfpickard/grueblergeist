@@ -36,25 +36,20 @@ def extract_user_data(conversations):
         })
     return user_data
 
-def save_to_markdown(user_data, output_file: str):
-    """Save user data to a Markdown file."""
+def save_to_json(user_data, output_file: str):
+    """Save user data to a JSON file."""
     with open(output_file, "w", encoding="utf-8") as file:
-        file.write("# User Chat Data\n\n")
-        for chat in user_data:
-            file.write(f"## Chat ID: {chat['chat_id']}\n")
-            file.write(f"**Created At:** {chat['created_at']}\n\n")
-            for msg in chat["messages"]:
-                file.write(f"**You:** {msg}\n\n")
+        json.dump(user_data, file, indent=4)
 
 def main():
     conversations_path = "data/conversations.json"
-    output_markdown_path = "data/user_chat_data.md"
+    output_json_path = "data/user_chat_data.json"
 
     conversations = load_conversations(conversations_path)
     user_data = extract_user_data(conversations)
-    save_to_markdown(user_data, output_markdown_path)
+    save_to_json(user_data, output_json_path)
 
-    print(f"User chat data saved to {output_markdown_path}")
+    print(f"User chat data saved to {output_json_path}")
 
 if __name__ == "__main__":
     main()
