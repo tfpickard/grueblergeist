@@ -94,6 +94,8 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
             json_match = re.search(r"```json\s*({.*?})\s*```", content, re.DOTALL)
             if not json_match:
                 json_match = re.search(r"({.*?})", content, re.DOTALL)
+            if not json_match:
+                json_match = re.search(r"({.*?})", content, re.DOTALL)
 
             if json_match:
                 extracted_json = json_match.group(1)
