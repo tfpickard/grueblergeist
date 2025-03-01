@@ -54,7 +54,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
     """
     for attempt in range(1, max_retries + 1):
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt},
@@ -253,7 +253,7 @@ def main():
 
     detailed_persona = persona_response.choices[0].message.content.strip()
 
-    persona_path = "data/detailed_persona.txt"
+    persona_path = "data/detailed_persona.md"
     with open(persona_path, "w", encoding="utf-8") as persona_file:
         persona_file.write(detailed_persona)
 
