@@ -70,8 +70,8 @@ def analyze_text_via_openai(chat_history: str) -> dict:
 You are an expert at persona analysis. Analyze the following chat history
 and produce a concise JSON summary describing the user's:
 
-1. Overall tone (e.g. 'casual, witty, technical')
-2. Writing style (e.g. 'concise vs. verbose, direct vs. roundabout')
+1. Overall tone as a list of descriptive words (e.g. ['casual', 'witty', 'technical'])
+2. Writing style as a list of descriptive words (e.g. ['concise', 'verbose', 'direct', 'roundabout'])
 3. Common phrases or idiomatic expressions they frequently use
 4. Preferred topics of conversation or areas of expertise
 
