@@ -16,7 +16,9 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import logging
 import os
 import re
+import signal
 from typing import List
+from datetime import datetime
 
 from rich.console import Console
 from rich.table import Table
@@ -124,15 +126,63 @@ def main():
     console.print(f"[green]Created {len(chunks)} chunks.[/green]")
 
     profiles = []
+    total_time = 0
+    total_cost = 0.0
+    cost_per_token = 0.000002  # Example cost per token for gpt-3.5-turbo
+    actual_times = []  # Track actual times for each chunk
+    interrupted = False
+
+    def signal_handler(sig, frame):
+        nonlocal interrupted
+        if interrupted:
+            console.print(
+                "\n[bold red]Process interrupted again. Exiting immediately...[/bold red]"
+            )
+            exit(1)
+        console.print(
+            "\n[bold yellow]Process interrupted. Finalizing current chunk and generating profile...[/bold yellow]"
+        )
+        interrupted = True
+
+    signal.signal(signal.SIGINT, signal_handler)
     logging.info("Starting profile analysis.")
     for idx, chunk in enumerate(chunks, start=1):
         console.print(f"[bold cyan]Analyzing chunk {idx}/{len(chunks)}...[/bold cyan]")
+        if interrupted:
+            break
+
+        start_time = datetime.now()
         profile = analyze_chunk(chunk)
+        end_time = datetime.now()
+        elapsed_time = (end_time - start_time).total_seconds()
+        total_time += elapsed_time
+
+        # Estimate completion
+        actual_times.append(elapsed_time)
+        avg_actual_time = sum(actual_times) / len(actual_times)
+        percent_complete = (idx + 1) / len(chunks) * 100
+        avg_time_per_chunk = total_time / (idx + 1)
+        estimated_time_remaining = avg_time_per_chunk * (len(chunks) - (idx + 1))
+
+        console.print(
+            f"[bold cyan]Chunk {idx}/{len(chunks)} processed in {elapsed_time:.2f}s.[/bold cyan]"
+        )
+        console.print(
+            f"[bold green]Estimated {percent_complete:.2f}% complete. "
+            f"Estimated time remaining: {estimated_time_remaining:.2f}s.[/bold green]"
+        )
         profiles.append(profile)
         logging.info(f"Chunk {idx} analyzed: {json.dumps(profile)}")
         console.print(f"[green]Chunk {idx} analyzed successfully.[/green]")
 
-    console.print("[bold cyan]Consolidating profiles...[/bold cyan]")
+    console.print(
+        f"[bold green]Total cost of API calls: ${total_cost:.6f}[/bold green]"
+    )
+
+    if interrupted:
+        console.print(
+            "[bold yellow]Interrupted: Generating profile from current progress...[/bold yellow]"
+        )
     logging.info("Starting profile consolidation.")
     consolidated_profile = consolidate_profiles(profiles)
     logging.info(f"Consolidated profile: {json.dumps(consolidated_profile)}")
