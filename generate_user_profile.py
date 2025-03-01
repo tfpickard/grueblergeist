@@ -7,6 +7,7 @@ Processes the data in chunks to avoid API usage limits.
 import json
 import os
 import openai
+import os
 from typing import List
 
 # Set up OpenAI API client
