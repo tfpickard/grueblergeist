@@ -128,6 +128,7 @@ def main():
     total_cost = 0.0
     cost_per_token = 0.000002  # Example cost per token for gpt-3.5-turbo
     actual_times = []  # Track actual times for each chunk
+    chunk_sizes = []  # Track sizes of each chunk
     interrupted = False
 
     def signal_handler(sig, frame):
@@ -152,15 +153,17 @@ def main():
         start_time = datetime.now()
         profile = analyze_chunk(chunk)
         end_time = datetime.now()
+        chunk_size = len(chunk)
+        chunk_sizes.append(chunk_size)
         elapsed_time = (end_time - start_time).total_seconds()
         total_time += elapsed_time
 
         # Estimate completion
         actual_times.append(elapsed_time)
-        avg_actual_time = sum(actual_times) / len(actual_times)
+        avg_time_per_char = total_time / sum(chunk_sizes)
         percent_complete = (idx + 1) / len(chunks) * 100
-        avg_time_per_chunk = total_time / (idx + 1)
-        estimated_time_remaining = avg_time_per_chunk * (len(chunks) - (idx + 1))
+        remaining_chars = sum(chunk_sizes[idx + 1 :])
+        estimated_time_remaining = avg_time_per_char * remaining_chars
 
         console.print(
             f"[bold cyan]Chunk {idx}/{len(chunks)} processed in {elapsed_time:.2f}s.[/bold cyan]"
