@@ -5,24 +5,17 @@ Processes the data in chunks to avoid API usage limits.
 """
 
 import json
-import os
-
-from openai import OpenAI
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-from openai import OpenAI
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import logging
 import os
 import re
 import signal
-from typing import List, Tuple, Any
 from datetime import datetime
+from typing import Any, List, Tuple
 
-from rich.console import Console
+from openai import OpenAI
+from rich import print
+from rich.console import Console, Group
 from rich.table import Table
-from rich.console import Group
 
 logging.basicConfig(
     filename="profile_build.log", level=logging.INFO, format="%(asctime)s %(message)s"
@@ -34,6 +27,8 @@ console = Console()
 CONVERSATIONS_PATH = "data/conversations.json"
 STYLE_PROFILE_PATH = "data/user_style_profile.json"
 CHUNK_SIZE = 6000  # Approx. characters per chunk
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def load_conversations(file_path: str) -> List[dict]:
@@ -74,7 +69,7 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
             console.print(
                 f"[bold red]JSON decoding failed on attempt {attempt}/{max_retries}![/bold red]"
             )
-            console.print(f"[yellow]Raw response:[/yellow]\n{content}")
+            # console.print(f"[yellow]Raw response:[/yellow]\n{content}")
             logging.warning(f"Badly formatted JSON response:\n{content}")
             logging.warning(
                 f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}"
@@ -102,10 +97,19 @@ def consolidate_profiles(profiles: List[dict]) -> dict:
     }
     for profile in profiles:
         for key in consolidated.keys():
-            consolidated[key].extend(profile.get(key, []))
+            # if key == "tone" or key == "style":
+
+            v = profile.get(key)
+            if type(v) == str:
+                v = re.split(r",|and", v)
+                v = [x.strip() for x in v if x.strip()]
+                # print(f"*********** key={key}: {v}")
+            consolidated[key].extend(v)
     # Remove duplicates
     for key in consolidated.keys():
+        # print(f" --- {key} == {consolidated[key]}")
         consolidated[key] = list(set(consolidated[key]))
+        # print(f" --- {key} == {consolidated[key]}\n")
     return consolidated
 
 
@@ -169,8 +173,10 @@ def main():
         avg_time_per_char = total_time / sum(chunk_sizes) if sum(chunk_sizes) > 0 else 0
         avg_time_per_word = total_time / total_words if total_words > 0 else 0
         percent_complete = (idx + 1) / len(chunks) * 100
-        remaining_chars = sum(chunk_sizes[idx:])
-        estimated_time_remaining = avg_time_per_char * remaining_chars if remaining_chars > 0 else 0
+        remaining_chars = sum(chunk_sizes[idx + 1 :])
+        estimated_time_remaining = (
+            avg_time_per_char * remaining_chars if remaining_chars > 0 else 999
+        )
 
         table = Table(title=f"Chunk {idx}/{len(chunks)} Analysis")
 
@@ -206,6 +212,7 @@ def main():
 
     for key, values in consolidated_profile.items():
         table.add_row(key, ", ".join(values))
+        # print(f"  >>>  {key} = -->|{values}|")
 
     console.print(table)
 
