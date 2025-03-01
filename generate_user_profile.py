@@ -173,7 +173,8 @@ def main():
         avg_time_per_char = total_time / sum(chunk_sizes) if sum(chunk_sizes) > 0 else 0
         avg_time_per_word = total_time / total_words if total_words > 0 else 0
         percent_complete = (idx + 1) / len(chunks) * 100
-        remaining_chars = sum(chunk_sizes[idx + 1:])
+        remaining_chars = sum(chunk_sizes[idx + 1 :])
+        print(f"Remaining chars: {remaining_chars}")
         estimated_time_remaining = (
             avg_time_per_char * remaining_chars if remaining_chars > 0 else 999
         )
