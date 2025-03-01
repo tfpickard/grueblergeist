@@ -161,7 +161,7 @@ def main():
     """
 
     persona_response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         messages=[
             {
                 "role": "system",
@@ -188,4 +188,6 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        console.print("\n[bold red]Process interrupted by user (Ctrl+C). Exiting gracefully...[/bold red]")
+        console.print(
+            "\n[bold red]Process interrupted by user (Ctrl+C). Exiting gracefully...[/bold red]"
+        )
