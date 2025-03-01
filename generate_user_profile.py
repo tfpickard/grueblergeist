@@ -105,9 +105,9 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
                     logging.warning(
                         f"Extracted JSON also failed to decode: {extracted_json}"
                     )
-    console.print("[bold red]Failed to decode JSON after multiple retries.[/bold red]")
+    console.print("[bold red]Failed to decode JSON after multiple retries. Skipping this conversation.[/bold red]")
     console.print("[bold red]Last raw response:[/bold red]\n", content)
-    raise ValueError("Failed to decode JSON after multiple retries.")
+    return {}, None
 
 
 def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
