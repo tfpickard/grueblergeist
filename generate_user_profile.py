@@ -185,4 +185,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        console.print("\n[bold red]Process interrupted by user (Ctrl+C). Exiting gracefully...[/bold red]")
