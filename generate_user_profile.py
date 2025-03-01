@@ -257,7 +257,10 @@ def main():
     table.add_column("Values", style="yellow")
 
     for key, values in consolidated_profile.items():
-        table.add_row(key, ", ".join(values))
+        if isinstance(values, list):
+            table.add_row(key, ", ".join(values))
+        else:
+            table.add_row(key, str(values))
         # print(f"  >>>  {key} = -->|{values}|")
 
     console.print(table)
