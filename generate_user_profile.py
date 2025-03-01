@@ -151,6 +151,10 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
     logging.info("Starting profile analysis.")
+    total_bytes = 0
+    for idx, chunk in enumerate(chunks, start=0):
+        total_bytes += len(chunk)
+
     for idx, chunk in enumerate(chunks, start=1):
         console.print(f"[bold cyan]Analyzing chunk {idx}/{len(chunks)}...[/bold cyan]")
         if interrupted:
@@ -173,7 +177,9 @@ def main():
         avg_time_per_char = total_time / sum(chunk_sizes) if sum(chunk_sizes) > 0 else 0
         avg_time_per_word = total_time / total_words if total_words > 0 else 0
         percent_complete = (idx + 1) / len(chunks) * 100
-        remaining_chars = sum(chunk_sizes[idx:])
+        # remaining_chars = sum(chunk_sizes[(idx - 1):])
+        remaining_chars = total_bytes - sum(chunk_sizes)
+        # print(f"Chunk {idx} size: {chunk_sizes[idx-1]}")
         print(f"Remaining chars: {remaining_chars}")
         estimated_time_remaining = (
             avg_time_per_char * remaining_chars if remaining_chars > 0 else 999
