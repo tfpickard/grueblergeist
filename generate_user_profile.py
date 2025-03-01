@@ -193,8 +193,12 @@ def main():
 
         table.add_row("Elapsed Time (s)", f"{elapsed_time:.2f}")
         table.add_row("Percent Complete", f"{percent_complete:.2f}%")
-        estimated_time_remaining_hms = str(datetime.timedelta(seconds=int(estimated_time_remaining)))
-        table.add_row("Estimated Time Remaining (hh:mm:ss)", estimated_time_remaining_hms)
+        estimated_time_remaining_hms = str(
+            timedelta(seconds=int(estimated_time_remaining))
+        )
+        table.add_row(
+            "Estimated Time Remaining (hh:mm:ss)", estimated_time_remaining_hms
+        )
         table.add_row("Average Time per Word (s)", f"{avg_time_per_word:.4f}")
         table.add_row("Total Cost ($)", f"{total_cost:.6f}")
 
