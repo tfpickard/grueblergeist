@@ -199,8 +199,8 @@ def main():
         end_time = datetime.now()
         tokens_used = response.usage.total_tokens
         total_cost += tokens_used * cost_per_token
-        chunk_size = len(chunk)
-        word_count = len(chunk.split())
+        chunk_size = len(conversation)
+        word_count = len(conversation.split())
         total_words += word_count
         chunk_sizes.append(chunk_size)
         elapsed_time = (end_time - start_time).total_seconds()
