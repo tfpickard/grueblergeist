@@ -68,9 +68,9 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
             return json.loads(content), response
         except json.JSONDecodeError:
             console.print(
-                f"[bold red]JSON decoding failed on attempt {attempt}/{max_retries}![/bold red]"
+                f"[bold yellow]JSON decoding failed on attempt {attempt}/{max_retries}![/bold yellow]"
             )
-            # console.print(f"[yellow]Raw response:[/yellow]\n{content}")
+            console.print(f"[bold red]Raw response:[/bold red]\n[red]{content}[/red]")
             logging.warning(f"Badly formatted JSON response:\n{content}")
             logging.warning(
                 f"JSON decoding failed on attempt {attempt}/{max_retries}. Raw response: {content}"
@@ -148,7 +148,7 @@ def main():
     profiles = []
     total_time = 0
     total_cost = 0.0
-    cost_per_token = 0.000002  # Example cost per token for gpt-3.5-turbo
+    cost_per_token = 0.15 / 1e6  # Cost per token in dollars
     actual_times = []  # Track actual times for each chunk
     chunk_sizes = []  # Track sizes of each chunk
     interrupted = False
@@ -172,7 +172,7 @@ def main():
     total_bytes = 0
     for idx, chunk in enumerate(chunks, start=0):
         total_bytes += len(chunk)
-    random.shuffle(chunks)
+    # random.shuffle(chunks)
     for idx, chunk in enumerate(chunks, start=1):
         console.print(
             f"[bold cyan]Analyzing {len(chunk)}-byte chunk {idx}/{len(chunks)}...[/bold cyan]"
