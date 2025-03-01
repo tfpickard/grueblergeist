@@ -64,7 +64,8 @@ def analyze_chunk(chunk: str, max_retries: int = 3) -> Tuple[dict, Any]:
     """Analyze a chunk of conversation data using OpenAI with retries."""
     prompt = f"""
     Analyze the following conversation data and provide a JSON summary with keys:
-    "tone", "style", "common_phrases", "preferred_topics", "average_sentence_length", "vocabulary_richness".
+    "tone", "style", "common_phrases", "preferred_topics", "average_sentence_length", "vocabulary_richness",
+    "sentiment", "response_time_patterns", "engagement_level", "topic_diversity", "question_frequency".
 
     Conversation Data:
     {chunk}
@@ -120,6 +121,11 @@ def consolidate_profiles(profiles: List[dict], chunks: List[str]) -> dict:
         "preferred_topics": [],
         "average_sentence_length": 0,
         "vocabulary_richness": 0,
+        "sentiment": "neutral",
+        "response_time_patterns": [],
+        "engagement_level": 0,
+        "topic_diversity": 0,
+        "question_frequency": 0,
     }
     for profile in profiles:
         for key in consolidated.keys():
