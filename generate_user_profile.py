@@ -100,10 +100,11 @@ def consolidate_profiles(profiles: List[dict]) -> dict:
             # if key == "tone" or key == "style":
 
             v = profile.get(key)
-            if type(v) == str:
+            if isinstance(v, str):
                 v = re.split(r",|and", v)
                 v = [x.strip() for x in v if x.strip()]
-                # print(f"*********** key={key}: {v}")
+            elif isinstance(v, list):
+                v = [x for x in v if isinstance(x, str)]
             consolidated[key].extend(v)
     # Remove duplicates
     for key in consolidated.keys():
