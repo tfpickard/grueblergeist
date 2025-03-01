@@ -200,6 +200,8 @@ def main():
             "Estimated Time Remaining (hh:mm:ss)", estimated_time_remaining_hms
         )
         table.add_row("Average Time per Word (s)", f"{avg_time_per_word:.4f}")
+        total_elapsed_time_hms = str(timedelta(seconds=int(total_time)))
+        table.add_row("Total Elapsed Time (hh:mm:ss)", total_elapsed_time_hms)
         table.add_row("Total Cost ($)", f"{total_cost:.6f}")
 
         console.print(Group(table))
