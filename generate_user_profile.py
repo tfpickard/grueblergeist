@@ -157,7 +157,9 @@ def main():
         total_bytes += len(chunk)
 
     for idx, chunk in enumerate(chunks, start=1):
-        console.print(f"[bold cyan]Analyzing chunk {idx}/{len(chunks)}...[/bold cyan]")
+        console.print(
+            f"[bold cyan]Analyzing {len(chunk)}-byte chunk {idx}/{len(chunks)}...[/bold cyan]"
+        )
         if interrupted:
             break
 
@@ -196,10 +198,10 @@ def main():
         estimated_time_remaining_hms = str(
             timedelta(seconds=int(estimated_time_remaining))
         )
+        table.add_row("Average Time per Word (s)", f"{avg_time_per_word:.4f}")
         table.add_row(
             "Estimated Time Remaining (hh:mm:ss)", estimated_time_remaining_hms
         )
-        table.add_row("Average Time per Word (s)", f"{avg_time_per_word:.4f}")
         total_elapsed_time_hms = str(timedelta(seconds=int(total_time)))
         table.add_row("Total Elapsed Time (hh:mm:ss)", total_elapsed_time_hms)
         table.add_row("Total Cost ($)", f"{total_cost:.6f}")
