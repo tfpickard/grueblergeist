@@ -60,7 +60,6 @@ def main():
             exit(1)
         console.print(
             f"[bold blue]Average actual time per chunk: {avg_actual_time:.2f}s.[/bold blue]"
-        )
             "\n[bold yellow]Process interrupted. Finalizing current chunk and generating profile...[/bold yellow]"
         )
         interrupted = True
